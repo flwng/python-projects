@@ -1,69 +1,74 @@
-from turtle import Screen
+from turtle import Screen, Turtle
 from snake import Snake
+from score import Score
 from food import Food
 import time
 
-# class Snake:
+# TOP_BORDER = 260
 
-#     def __init__(self):
-#         self.segments = []
-#         self.create_snake()
-    
-#     def create_snake(self):
-#         for position in INITIAL_POS:
-#             new_segment = Turtle('square')
-#             new_segment.color('white')
-#             new_segment.penup()
-#             new_segment.goto(position)
-#             self.segments.append(new_segment)
-    
-#     def move(self):
-#         for i in range(len(self.segments) - 1, 0, -1):
-#             x = self.segments[i - 1].xcor()
-#             y = self.segments[i - 1].ycor()
-#             self.segments[i].goto(x, y)
-#         self.segments[0].fd(DISTANCE)
+def init():
 
-#     def up(self):
-#         if self.segments[0].heading != 270:
-#             self.segments[0].setheading(90)
+    screen.clear()
+    screen.bgcolor('black')
+    screen.tracer(0)
 
-#     def down(self):
-#         if self.segments[0].heading != 90:
-#             self.segments[0].setheading(270)
+    top_border = Turtle()
+    top_border.color('white')
+    top_border.penup()
+    top_border.goto(-300, 260)
+    top_border.pendown()
+    top_border.goto(300, 260)
+    top_border.penup()
 
-#     def left(self):
-#         if self.segments[0].heading != 0:
-#             self.segments[0].setheading(180)
+    snake = Snake()
+    food = Food()
+    score = Score()
 
-#     def right(self):
-#         if self.segments[0].heading != 180:
-#             self.segments[0].setheading(0)
+    screen.onkeypress(snake.up, 'Up')
+    screen.onkeypress(snake.down, 'Down')
+    screen.onkeypress(snake.right, 'Right')
+    screen.onkeypress(snake.left, 'Left')
+    screen.onkeypress(init, 'space')
 
+    game_on = True
 
+    while game_on:
+        screen.update()
+        time.sleep(0.1)
+        snake.move()
 
+        # detect self collision
+        if snake.self_eat():
+            game_on = False
+            score.game_over()
 
-screen = Screen()
-screen.setup(600, 600)
-screen.bgcolor('black')
-screen.tracer(0)
+        # detect border collision
+        if snake.segments[0].xcor() >= 300 or snake.segments[0].xcor() <= -320 or snake.segments[0].ycor() <= -300 or snake.segments[0].ycor() >= 260:
+            game_on = False
+            score.game_over()
 
-snake = Snake()
-food = Food()
-
-screen.listen()
-screen.onkeypress(snake.up, 'Up')
-screen.onkeypress(snake.down, 'Down')
-screen.onkeypress(snake.right, 'Right')
-screen.onkeypress(snake.left, 'Left')
-
-game_on = True
-
-while game_on:
-    screen.update()
-    time.sleep(0.1)
-    snake.move()
+        # detect food collision
+        if snake.segments[0].distance(food) < 1:
+            snake.eaten_food()
+            score.update_score()
+            food.refresh()
 
 
 
-screen.exitonclick()
+if __name__ == '__main__':
+    screen = Screen()
+    screen.setup(600, 600)
+    screen.bgcolor('black')
+    screen.tracer(0)
+
+    start = Turtle()
+    start.color('white')
+    start.penup()
+    start.goto(0, 0)
+    start.write(f"Press Spacebar to start", align='center', font=('Arial', 40, 'normal'))
+
+    screen.listen()
+    screen.onkeypress(init, 'space')
+
+    screen.exitonclick()
+    screen.mainloop()
